@@ -2,6 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import ejs from "ejs";
 import mongoose from "mongoose";
+import encrypt from "mongoose-encryption";
 
 
 //Declaration of constants
@@ -24,6 +25,9 @@ const userSchema = new Schema({
 	password: String,
 });
 
+//Encryption
+const secret = "Thisismylittlesecret.Shhhh!";
+userSchema.plugin(encrypt, {secret: secret, encryptedFields: ["password"]});
 
 const User = mongoose.model("User", userSchema);
 
