@@ -3,6 +3,8 @@ import express from "express";
 import ejs from "ejs";
 import mongoose from "mongoose";
 import encrypt from "mongoose-encryption";
+import env from "dotenv";
+env.config();
 
 
 //Declaration of constants
@@ -26,8 +28,7 @@ const userSchema = new Schema({
 });
 
 //Encryption
-const secret = "Thisismylittlesecret.Shhhh!";
-userSchema.plugin(encrypt, {secret: secret, encryptedFields: ["password"]});
+userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ["password"]});
 
 const User = mongoose.model("User", userSchema);
 
