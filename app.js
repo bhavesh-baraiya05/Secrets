@@ -2,9 +2,7 @@ import bodyParser from "body-parser";
 import express from "express";
 import ejs from "ejs";
 import mongoose from "mongoose";
-import encrypt from "mongoose-encryption";
-import env from "dotenv";
-env.config();
+import md5 from "md5";
 
 
 //Declaration of constants
@@ -26,9 +24,6 @@ const userSchema = new Schema({
 	email: String,
 	password: String,
 });
-
-//Encryption
-userSchema.plugin(encrypt, {secret: process.env.SECRET, encryptedFields: ["password"]});
 
 const User = mongoose.model("User", userSchema);
 
@@ -54,7 +49,7 @@ app.get("/logout", (req, res) => {
 //Post methods
 app.post("/login", (req, res) => {
     const email = req.body.username;
-    const passwd = req.body.password;
+    const passwd = md5(req.body.password);
 
     User.findOne({email: email}).then((success, err)=>{
         if(err){
@@ -82,7 +77,7 @@ app.post("/register", (req, res) => {
     console.log(req.body);
     const newUsr = new User({
         email: req.body.username,
-        password: req.body.password
+        password: md5(req.body.password)
     });
 
     newUsr.save().then((success, err)=>{
