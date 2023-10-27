@@ -2,7 +2,9 @@ import bodyParser from "body-parser";
 import express from "express";
 import ejs from "ejs";
 import mongoose from "mongoose";
-import md5 from "md5";
+import bcrypt from "bcrypt";
+
+const saltRound = 10;
 
 
 //Declaration of constants
@@ -49,7 +51,7 @@ app.get("/logout", (req, res) => {
 //Post methods
 app.post("/login", (req, res) => {
     const email = req.body.username;
-    const passwd = md5(req.body.password);
+    const passwd = req.body.password;
 
     User.findOne({email: email}).then((success, err)=>{
         if(err){
@@ -57,13 +59,14 @@ app.post("/login", (req, res) => {
         }
         else{
             if(success){
-                console.log(success);
-                if(success.password === passwd){
-                    res.render("secrets");
-                }
-                else{
-                    res.send("Wrong Password!");
-                }
+                bcrypt.compare(passwd, success.password, (err, result)=>{
+                    if(result === true){
+                        res.render("secrets");
+                    }
+                    else{
+                        res.send("Wrong Password!");
+                    }
+                });
             }
             else{
                 res.send("Wrong Email!");
@@ -75,16 +78,19 @@ app.post("/login", (req, res) => {
 
 app.post("/register", (req, res) => {
     console.log(req.body);
-    const newUsr = new User({
-        email: req.body.username,
-        password: md5(req.body.password)
-    });
+    bcrypt.hash(req.body.password, saltRound, (err, hash)=>{
+        const newUsr = new User({
+            email: req.body.username,
+            password: hash
+        });
+    
+        newUsr.save().then((success, err)=>{
+            if(err) throw err;
 
-    newUsr.save().then((success, err)=>{
-        if(err) throw err;
-        console.log(`User added,`);
+            console.log(`User added,`);
+        });
+        res.render("secrets");
     });
-    res.render("secrets");
 });
 
 
